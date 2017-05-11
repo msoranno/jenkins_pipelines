@@ -1,10 +1,14 @@
 pipeline {
     agent any
-
+    environment {
+    	VAR1="valor1"
+	VAR2="valor2"
+    }
     stages {
         stage('Build') {
             steps {
                 echo 'Building..'
+                echo "VAR1: $VAR1"
             }
         }
         stage('Test') {
