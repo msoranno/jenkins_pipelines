@@ -1,0 +1,48 @@
+/* 
+
+DOCUMENTACION VARIADA
+
+	//Verificando si el plugin está activo
+//def currentAuthStrategy = Hudson.instance.getAuthorizationStrategy()  
+	if (currentAuthStrategy instanceof RoleBasedAuthorizationStrategy) {
+	      println "Role-based está siendo usado"
+	} else {
+	      println "Enabling role based authorisation strategy..."
+	}
+
+["role-strategy", "ownership"].each {
+	if (! pm.getPlugin(it)) {
+	  deployment = uc.getPlugin(it).deploy(true)
+	  deployment.get()
+	}
+	activatePlugin(pm.getPlugin(it))
+}
+
+
+//-----------------------------------------------------------
+// Procedimiento para agilizar el desarrollo
+
+1. Ver el token de tu usuario. Por la interfaz en la configuración del mismo
+	Para mi usuario admin el token es: 
+	0cb71b475599b053b593a8f531d052e6
+2. Obtenemos el crumb
+	2.1 Con usuario y contraseña:
+		wget -q --auth-no-challenge --user admin --password admin --output-document - 'http://172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'
+		devuelve esto:
+		Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1
+	2.2 Con el token
+		CRUMB=$(curl -s 'http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
+		devuelve esto:
+		Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1
+
+
+v_toke="0cb71b475599b053b593a8f531d052e6"
+v_user="admin"
+
+CRUMB=$(curl -s 'http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
+curl -d "script=test.groovy" -H "Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1" http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/scriptText
+
+curl -d "script=test.groovy" -H "$CRUMB" http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/scriptText
+
+//--------------------------------------------------------------
+*/

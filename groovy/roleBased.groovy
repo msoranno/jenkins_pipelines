@@ -12,20 +12,23 @@
 import hudson.security.*
 import com.michelin.cio.hudson.plugins.rolestrategy.*
 import java.lang.reflect.*
+//import groovy.json.*
 //import hudson.*
 //import jenkins.model.*
 //import java.util.*
 //import java.util.logging.*
-//import groovy.json.*
 
 def jenkInstance = Jenkins.getInstance()
+def txtGlobalRole = "Global Role creation"
+def txtProjectlRole = "Project Role creation"
+def txtPermission = "Selecting permission for"
 
 
 def getCurrentSecurity(j) {
 	def currentAuthStrategy = j.getAuthorizationStrategy()
 	def secu = j.getSecurityRealm()
-	println	"[-info-] Tipo de estrategia actual: " + currentAuthStrategy
-	println	"[-info-] Tipo de seguridad actual: " + secu
+	println	"[-info-] Current strategy: " + currentAuthStrategy
+	println	"[-info-] Current security: " + secu
 }
 
 /*---------------------------------------------------------
@@ -39,9 +42,9 @@ def plug_ok = 0
 for (plug_in in list_plugin) {
 	if ( jenkInstance.pluginManager.activePlugins.find { it.shortName == (plug_in) } != null ){
 		plug_ok += 1
-		println "[-info-] El plugin " + (plug_in) + " existe...OK"
+		println "[-info-] Plugin " + (plug_in) + " found...OK"
 	} else {
-		println "[-info-] El plugin " + (plug_in) + " NO existe.. :("
+		println "[-info-] Plugin " + (plug_in) + " NOT found.. :("
 	}
 }
 
@@ -53,6 +56,22 @@ if (plug_ok==totValida) {
     return
 }
 
+/*---------------------------------------------------------
+S-json_Validation
+-----------------------------------------------------------*/
+/*
+def filePath = "./user_roles.json"
+def file = new File(filePath)
+def pathpwd = new File(System.getProperty("user.dir")).name
+println (pathpwd)
+try {
+	assert file.exists() : "file not found"
+	assert file.canRead() : "file cannot be read"
+} catch (AssertionError e) {
+	println "Error: El fichero ${filePath} no pudo ser leído -- " + e.getMessage()
+	return
+}
+*/
 /*---------------------------------------------------------
 S-Role_based_on
 Se activa la estrategia del Role-based
@@ -84,6 +103,9 @@ arodriguez - Alexandre Rodriguez Valdes
 pdiaz - Pablo Diaz
 --------------------------------------------------------------------------------------------*/
 
+//-------------------
+//Change Here
+//------------------
 def access = [
   admins: ["admin", "ranglada", "foliveira", "msoranno", "hmtorres"],
   jobAdmins: ["pdiaz"],
@@ -97,6 +119,8 @@ def access = [
   deployWebsphereConfigure_PRO: []
 ]
 
+
+//Do not change This
 def ownershipAccess = [
   ownerhip_CurrentUserIsPrimaryOwner: ["authenticated"],
   ownerhip_CurrentUserIsOwner: ["authenticated"],
@@ -111,11 +135,11 @@ Cada nuevo role definido aquí requiere agregar nuevos elementos en las seccione
 - S-Roles_Permission_Set
 - S-Users_Groups_Set
 --------------------------------------------------------------------------------------------*/
-def globalRoleAdmin = "admin"
-def globalJobAdmin  = "job-admin"
-def globalJobViewer = "job-viewer"
+def globalRoleAdmin  = "admin"
+def globalJobAdmin   = "job-admin"
+def globalJobViewer  = "job-viewer"
 def globalRegistered = "registered"
-def globalJobExecu  = "job-executor"
+def globalJobExecu   = "job-executor"
 
 
 /*---------------------------------------------------------------------------------------------
@@ -344,7 +368,7 @@ Creamos un grupo de permisos (Clickamos)
 --------------------------------------------------------------*/
 
 //admin
-println "[-info-] Seleccionamos permisos para ${globalRoleAdmin} "
+println "[-info-] ${txtPermission} ${globalRoleAdmin} "
 Set<Permission> adminPermissionSet = new HashSet<Permission>();
 adminPermissions.each { p ->
   def permission = Permission.fromId(p);
@@ -356,7 +380,7 @@ adminPermissions.each { p ->
 }
 
 //job-admin
-println "[-info-] Seleccionamos permisos para ${globalJobAdmin} "
+println "[-info-] ${txtPermission} ${globalJobAdmin} "
 Set<Permission> job_adminPermissionsSet = new HashSet<Permission>();
 job_adminPermissions.each { p ->
   def permission = Permission.fromId(p);
@@ -368,7 +392,7 @@ job_adminPermissions.each { p ->
 }
 
 //job-viewer
-println "[-info-] Seleccionamos permisos para ${globalJobViewer}"
+println "[-info-] ${txtPermission} ${globalJobViewer}"
 Set<Permission> job_viewerPermissionsSet = new HashSet<Permission>();
 job_viewerPermissions.each { p ->
   def permission = Permission.fromId(p);
@@ -381,7 +405,7 @@ job_viewerPermissions.each { p ->
 
 
 //job-executor
-println "[-info-] Seleccionamos permisos para ${globalJobExecu}"
+println "[-info-] ${txtPermission} ${globalJobExecu}"
 Set<Permission> job_executorPermissionsSet = new HashSet<Permission>();
 job_executorPermissions.each { p ->
   def permission = Permission.fromId(p);
@@ -394,7 +418,7 @@ job_executorPermissions.each { p ->
 
 
 //registered
-println "[-info-] Seleccionamos permisos para ${globalRegistered}"
+println "[-info-] ${txtPermission} ${globalRegistered}"
 Set<Permission> registeredPermissionsSet = new HashSet<Permission>();
 registeredPermissions.each { p ->
   def permission = Permission.fromId(p);
@@ -407,9 +431,9 @@ registeredPermissions.each { p ->
 
 //deployWebsphereBuilder_RoleName (DEV,INT,PRO)
 //Se usa el mismo set de permisos para los 3 entornos.
-println "[-info-] Seleccionamos permisos para ${deployWebsphereBuilder_RoleName_DEV}"
-println "[-info-] Seleccionamos permisos para ${deployWebsphereBuilder_RoleName_INT}"
-println "[-info-] Seleccionamos permisos para ${deployWebsphereBuilder_RoleName_PRO}"
+println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_DEV}"
+println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_INT}"
+println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_PRO}"
 Set<Permission> deployWebsphereBuilder_PermissionSet = new HashSet<Permission>();
 deployWebsphereBuilder_Permission.each { p ->
   def permission = Permission.fromId(p);
@@ -422,9 +446,9 @@ deployWebsphereBuilder_Permission.each { p ->
 
 //deployWebsphereConfigure_RoleName (DEV,INT,PRO)
 //Se usa el mismo set de permisos para los 3 entornos.
-println "[-info-] Seleccionamos permisos para ${deployWebsphereConfigure_RoleName_DEV}"
-println "[-info-] Seleccionamos permisos para ${deployWebsphereConfigure_RoleName_INT}"
-println "[-info-] Seleccionamos permisos para ${deployWebsphereConfigure_RoleName_PRO}"
+println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_DEV}"
+println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_INT}"
+println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_PRO}"
 Set<Permission> deployWebsphereConfigure_PermissionSet = new HashSet<Permission>();
 deployWebsphereConfigure_Permission.each { p ->
   def permission = Permission.fromId(p);
@@ -476,29 +500,29 @@ Creamos los roles globales junto con los grupos clickeados
 
 
 // admins
-println "[-info-] Creamos el global role ${globalRoleAdmin}"
+println "[-info-] ${txtGlobalRole} ${globalRoleAdmin}"
 Role adminRole = new Role(globalRoleAdmin, adminPermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.GLOBAL, adminRole);
 
 // job-admins
-println "[-info-] Creamos el global role ${globalJobAdmin}"
+println "[-info-] ${txtGlobalRole} ${globalJobAdmin}"
 Role jobAdminRole = new Role(globalJobAdmin, job_adminPermissionsSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.GLOBAL, jobAdminRole);
 
 // job-viewers
-println "[-info-] Creamos el global role ${globalJobViewer}"
+println "[-info-] ${txtGlobalRole} ${globalJobViewer}"
 Role jobViewerRole = new Role(globalJobViewer, job_viewerPermissionsSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.GLOBAL, jobViewerRole);
 
 
 // job-executors
-println "[-info-] Creamos el global role ${globalJobExecu}"
+println "[-info-] ${txtGlobalRole} ${globalJobExecu}"
 Role jobExecuRole = new Role(globalJobExecu, job_executorPermissionsSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.GLOBAL, jobExecuRole);
 
 
 // registered
-println "[-info-] Creamos el global role ${globalRegistered}"
+println "[-info-] ${txtGlobalRole} ${globalRegistered}"
 Role registeredRole = new Role(globalRegistered, registeredPermissionsSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.GLOBAL, registeredRole);
 
@@ -509,44 +533,44 @@ Creamos los roles de proyectos junto con los grupos clickeados
 --------------------------------------------------------------*/
 
 //Builders
-println "[-info-] Creamos el project role ${deployWebsphereBuilder_RoleName_DEV}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereBuilder_RoleName_DEV}"
 Role deployWebsphere_Builder_DEV = new Role(deployWebsphereBuilder_RoleName_DEV,deployWebsphereBuilder_Pattern_DEV,deployWebsphereBuilder_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Builder_DEV);
 
-println "[-info-] Creamos el project role ${deployWebsphereBuilder_RoleName_INT}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereBuilder_RoleName_INT}"
 Role deployWebsphere_Builder_INT = new Role(deployWebsphereBuilder_RoleName_INT,deployWebsphereBuilder_Pattern_INT,deployWebsphereBuilder_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Builder_INT);
 
-println "[-info-] Creamos el project role ${deployWebsphereBuilder_RoleName_PRO}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereBuilder_RoleName_PRO}"
 Role deployWebsphere_Builder_PRO = new Role(deployWebsphereBuilder_RoleName_PRO,deployWebsphereBuilder_Pattern_PRO,deployWebsphereBuilder_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Builder_PRO);
 
 //Configure
-println "[-info-] Creamos el project role ${deployWebsphereConfigure_RoleName_DEV}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereConfigure_RoleName_DEV}"
 Role deployWebsphere_Configure_DEV = new Role(deployWebsphereConfigure_RoleName_DEV,deployWebsphereConfigure_Pattern_DEV,deployWebsphereConfigure_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Configure_DEV);
 
-println "[-info-] Creamos el project role ${deployWebsphereConfigure_RoleName_INT}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereConfigure_RoleName_INT}"
 Role deployWebsphere_Configure_INT = new Role(deployWebsphereConfigure_RoleName_INT,deployWebsphereConfigure_Pattern_INT,deployWebsphereConfigure_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Configure_INT);
 
-println "[-info-] Creamos el project role ${deployWebsphereConfigure_RoleName_PRO}"
+println "[-info-] ${txtProjectlRole} ${deployWebsphereConfigure_RoleName_PRO}"
 Role deployWebsphere_Configure_PRO = new Role(deployWebsphereConfigure_RoleName_PRO,deployWebsphereConfigure_Pattern_PRO,deployWebsphereConfigure_PermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,deployWebsphere_Configure_PRO);
 
 //------------------ ownership--------------//
 //ownership- CurrentUserIsPrimaryOwner
-println "[-info-] Creamos el project role ${ownerhip_CurrentUserIsPrimaryOwner}"
+println "[-info-] ${txtProjectlRole} ${ownerhip_CurrentUserIsPrimaryOwner}"
 Role ownerhip_CurrentUserIsPrimaryOwner_Role = new Role(ownerhip_CurrentUserIsPrimaryOwner,ownership_pattern,oShip_CurrentUserIsPrimaryOwnerPermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,ownerhip_CurrentUserIsPrimaryOwner_Role);
 
 //ownership- CurrentUserIsOwner
-println "[-info-] Creamos el project role ${ownerhip_CurrentUserIsOwner}"
+println "[-info-] ${txtProjectlRole} ${ownerhip_CurrentUserIsOwner}"
 Role ownerhip_CurrentUserIsOwner_Role = new Role(ownerhip_CurrentUserIsOwner,ownership_pattern,oShip_CurrentUserIsOwnerPermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,ownerhip_CurrentUserIsOwner_Role);
 
 //ownership- CurrentUserIsOwner
-println "[-info-] Creamos el project role ${ownerhip_ItemSpecificWithUserID}"
+println "[-info-] ${txtProjectlRole} ${ownerhip_ItemSpecificWithUserID}"
 Role ownerhip_ItemSpecificWithUserID_Role = new Role(ownerhip_ItemSpecificWithUserID,ownership_pattern,oShip_ItemSpecificWithUserIDPermissionSet);
 roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,ownerhip_ItemSpecificWithUserID_Role);
 
@@ -638,71 +662,5 @@ ownershipAccess.ownerhip_ItemSpecificWithUserID.each { usuario ->
 /*-------------------------------------
 // Si falta un plugin no deberia llegar a esta
 -------------------------------------*/
-println	"Fin Save"
+println	"End Save"
 jenkInstance.save()
-
-
-
-
-
-
-/* 
-Pendiente: Crear Roles de proyectos
-
-ejemplo:
-// Create the Role
-    Role contentRole = new Role(contentRoleName,contentRolePattern,contentPermissions);
-    roleBasedAuthenticationStrategy.addRole(RoleBasedAuthorizationStrategy.PROJECT,contentRole);
-
-    https://github.com/Accenture/adop-platform-management/blob/master/projects/groovy/acl_admin.groovy
-
-
-
-
-
-DOCUMENTACION VARIADA
-
-	//Verificando si el plugin está activo
-//def currentAuthStrategy = Hudson.instance.getAuthorizationStrategy()  
-	if (currentAuthStrategy instanceof RoleBasedAuthorizationStrategy) {
-	      println "Role-based está siendo usado"
-	} else {
-	      println "Enabling role based authorisation strategy..."
-	}
-
-["role-strategy", "ownership"].each {
-	if (! pm.getPlugin(it)) {
-	  deployment = uc.getPlugin(it).deploy(true)
-	  deployment.get()
-	}
-	activatePlugin(pm.getPlugin(it))
-}
-
-
-//-----------------------------------------------------------
-// Procedimiento para agilizar el desarrollo
-
-1. Ver el token de tu usuario. Por la interfaz en la configuración del mismo
-	Para mi usuario admin el token es: 
-	0cb71b475599b053b593a8f531d052e6
-2. Obtenemos el crumb
-	2.1 Con usuario y contraseña:
-		wget -q --auth-no-challenge --user admin --password admin --output-document - 'http://172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)'
-		devuelve esto:
-		Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1
-	2.2 Con el token
-		CRUMB=$(curl -s 'http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
-		devuelve esto:
-		Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1
-
-
-v_toke="0cb71b475599b053b593a8f531d052e6"
-v_user="admin"
-
-CRUMB=$(curl -s 'http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,":",//crumb)')
-curl -d "script=test.groovy" -H "Jenkins-Crumb:400c720138d4481fd0763b8e10428ca1" http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/scriptText
-
-curl -d "script=test.groovy" -H "$CRUMB" http://admin:0cb71b475599b053b593a8f531d052e6@172.50.13.91:8000/scriptText
-
-//--------------------------------------------------------------
-*/
