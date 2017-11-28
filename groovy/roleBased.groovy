@@ -1,11 +1,12 @@
 
 /* 
+IMPORTANTE:
 1) Si los plugins role-strategy y ownership no existen
 	el script termina. Deben existir ambos antes de ejecutar este script.
 2) Este script no contempla la seguridad usada, LDAP, jenkins-database, etc
-	esa seguridad deberá ser proporcionada antes.
+	esa seguridad deberá ser proporcionada antes desde otro script groovy
 3) Roles definidos:
-	- Ver sección (S-Globales_Def)
+	- Ver sección (S-Globales_Def y S-ProjectRoles_Def)
 
 */ 
 
@@ -22,6 +23,7 @@ def jenkInstance = Jenkins.getInstance()
 def txtGlobalRole = "Global Role creation"
 def txtProjectlRole = "Project Role creation"
 def txtPermission = "Selecting permission for"
+def textoAlternativo = ""
 
 
 def getCurrentSecurity(j) {
@@ -30,6 +32,20 @@ def getCurrentSecurity(j) {
 	println	"[-info-] Current strategy: " + currentAuthStrategy
 	println	"[-info-] Current security: " + secu
 }
+
+def setPermission(texto,roleGlobal,losPermisos,permissionObj){
+	println "[-info-] ${texto} ${roleGlobal} "
+	//Set<Permission> adminPermissionSet = new HashSet<Permission>();
+	losPermisos.each { p ->
+	  def permission = Permission.fromId(p);
+	  if (permission != null) {
+	    permissionObj.add(permission);
+	  } else {
+	    println("Error: ${p} No es un permiso valido (Ignoramos)")
+	  }
+	}
+}
+
 
 /*---------------------------------------------------------
 S-Plugin_Validation
@@ -57,9 +73,15 @@ if (plug_ok==totValida) {
 }
 
 /*---------------------------------------------------------
-S-json_Validation
+S-json_Validation (Posible futuro)
 -----------------------------------------------------------*/
 /*
+//Lista de ficheros
+File dir = new File(".")
+dir.eachFile { f ->
+   println "${f} ${f.size()} ${new Date(f.lastModified())}"
+}
+
 def filePath = "./user_roles.json"
 def file = new File(filePath)
 def pathpwd = new File(System.getProperty("user.dir")).name
@@ -368,129 +390,40 @@ Creamos un grupo de permisos (Clickamos)
 --------------------------------------------------------------*/
 
 //admin
-println "[-info-] ${txtPermission} ${globalRoleAdmin} "
 Set<Permission> adminPermissionSet = new HashSet<Permission>();
-adminPermissions.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    adminPermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, globalRoleAdmin, adminPermissions, adminPermissionSet)
 //job-admin
-println "[-info-] ${txtPermission} ${globalJobAdmin} "
 Set<Permission> job_adminPermissionsSet = new HashSet<Permission>();
-job_adminPermissions.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    job_adminPermissionsSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, globalJobAdmin, job_adminPermissions, job_adminPermissionsSet)
 //job-viewer
-println "[-info-] ${txtPermission} ${globalJobViewer}"
 Set<Permission> job_viewerPermissionsSet = new HashSet<Permission>();
-job_viewerPermissions.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    job_viewerPermissionsSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
-
+setPermission(txtPermission, globalJobViewer, job_viewerPermissions, job_viewerPermissionsSet)
 //job-executor
-println "[-info-] ${txtPermission} ${globalJobExecu}"
 Set<Permission> job_executorPermissionsSet = new HashSet<Permission>();
-job_executorPermissions.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    job_executorPermissionsSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
-
+setPermission(txtPermission, globalJobExecu, job_executorPermissions, job_executorPermissionsSet)
 //registered
-println "[-info-] ${txtPermission} ${globalRegistered}"
 Set<Permission> registeredPermissionsSet = new HashSet<Permission>();
-registeredPermissions.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    registeredPermissionsSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, globalRegistered, registeredPermissions, registeredPermissionsSet)
 //deployWebsphereBuilder_RoleName (DEV,INT,PRO)
 //Se usa el mismo set de permisos para los 3 entornos.
-println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_DEV}"
-println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_INT}"
-println "[-info-] ${txtPermission} ${deployWebsphereBuilder_RoleName_PRO}"
+textoAlternativo = "CA_CIS_DeployWebsphere_Builder (DEV,INT,PRO)"
 Set<Permission> deployWebsphereBuilder_PermissionSet = new HashSet<Permission>();
-deployWebsphereBuilder_Permission.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    deployWebsphereBuilder_PermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, textoAlternativo, deployWebsphereConfigure_Permission, deployWebsphereBuilder_PermissionSet)
 //deployWebsphereConfigure_RoleName (DEV,INT,PRO)
 //Se usa el mismo set de permisos para los 3 entornos.
-println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_DEV}"
-println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_INT}"
-println "[-info-] ${txtPermission} ${deployWebsphereConfigure_RoleName_PRO}"
+textoAlternativo = "CA_CIS_DeployWebsphere_Configure (DEV,INT,PRO)"
 Set<Permission> deployWebsphereConfigure_PermissionSet = new HashSet<Permission>();
-deployWebsphereConfigure_Permission.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    deployWebsphereConfigure_PermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, textoAlternativo, deployWebsphereConfigure_Permission, deployWebsphereConfigure_PermissionSet)
 //Ownership - CurrentUserIsPrimaryOwnerPermission
 Set<Permission> oShip_CurrentUserIsPrimaryOwnerPermissionSet = new HashSet<Permission>();
-oShip_CurrentUserIsPrimaryOwnerPermission.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    oShip_CurrentUserIsPrimaryOwnerPermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, ownerhip_CurrentUserIsPrimaryOwner, oShip_CurrentUserIsPrimaryOwnerPermission, oShip_CurrentUserIsPrimaryOwnerPermissionSet)
 //Ownership - CurrentUserIsOwnerPermission
 Set<Permission> oShip_CurrentUserIsOwnerPermissionSet = new HashSet<Permission>();
-oShip_CurrentUserIsOwnerPermission.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    oShip_CurrentUserIsOwnerPermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
-
+setPermission(txtPermission, ownerhip_CurrentUserIsOwner, oShip_CurrentUserIsOwnerPermission, oShip_CurrentUserIsOwnerPermissionSet)
 //Ownership - ItemSpecificWithUserIDPermission
 Set<Permission> oShip_ItemSpecificWithUserIDPermissionSet = new HashSet<Permission>();
-oShip_ItemSpecificWithUserIDPermission.each { p ->
-  def permission = Permission.fromId(p);
-  if (permission != null) {
-    oShip_ItemSpecificWithUserIDPermissionSet.add(permission);
-  } else {
-    println("Error: ${p} No es un permiso valido (Ignoramos)")
-  }
-}
+setPermission(txtPermission, ownerhip_ItemSpecificWithUserID, oShip_ItemSpecificWithUserIDPermission, oShip_ItemSpecificWithUserIDPermissionSet)
+
 
 
 /*--------------------------------------------------------------

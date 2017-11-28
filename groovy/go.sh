@@ -8,6 +8,8 @@
 # 	- v_user  -> usuario jenkins
 #	- v_token -> token del usuario jenkins (puede verse por la interfaz de jenkins)
 # 	- jenk_ip -> dns/ip de jenkins
+# - Como ejecutarlo:
+#   - ./go.sh roleBased.groovy
 #---------------------------------------------------------------------------------------------
 
 if [ $# -eq 1 ]; then
@@ -36,6 +38,9 @@ if [ $# -eq 1 ]; then
 else
 	echo 
 	echo "Error: Missing groovy file."
+	echo
+	echo "i.e : "
+	echo "./go.sh roleBased.groovy"
 	echo
 fi
 
